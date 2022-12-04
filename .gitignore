@@ -350,9 +350,6 @@ MigrationBackup/
 .ionide/
 
 # CMake stuff
-MandelbrotAPI/build/
-MandelbrotAPI/build.em/
-MandelbrotAPI/build.vs/
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
