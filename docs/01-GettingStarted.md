@@ -22,7 +22,7 @@ This document will walk through the steps to setup a basic compilation environme
 
 ## Installing Emscripten
 
-Emscripten is used to replace a the C compiler and linker with a toolset that generates WebAssembly (WASM) instead.
+Emscripten is used to replace the C compiler and linker with a toolset that generates WebAssembly (WASM) instead.
 
 1. First, navigate to your repository folder.
 
@@ -61,7 +61,7 @@ Emscripten is used to replace a the C compiler and linker with a toolset that ge
     ```bash
     ./emsdk install 3.1.12
     ./emsdk activate 3.1.12
-    source ./emsdk_env.s
+    source ./emsdk_env.sh
     ```
 
     Test the installation by running `emcc --version`:
@@ -168,3 +168,63 @@ In this section we will create a simple C API that generates a Mandelbrot set an
 // mandelbrotlib.h
 
 ```
+
+## Rough Notes on Compiling the `kahuapdf.bc` file
+
+1. Get the latest from the Artifex mupdf mirror - either:
+    * Clone the repo and init the submodules
+    * Download a source tar (these include the submodule source)
+1. Update the **platform/wasm/wrap.c** file to include the latest Kahua PDF C code.
+1. Update the **platform/wasm/Makefile** and set the `LIB_BUILD_FLAGS` and `BUILD_FLAGS` as follows:
+
+    ```make
+    ifeq ($(build),debug)
+        LIB_BUILD_FLAGS := -Os -g -s USE_LIBJPEG=1
+        BUILD_FLAGS := -Wall -O0 -g -s USE_LIBJPEG=1
+    else ifeq ($(build),sanitize)
+        LIB_BUILD_FLAGS := -O2 -g -fsanitize=null -s USE_LIBJPEG=1
+        BUILD_FLAGS := -Wall -O0 -g -fsanitize=null -fsanitize=address -fsanitize=leak -s USE_LIBJPEG=1
+    else
+        LIB_BUILD_FLAGS := -O2 -s USE_LIBJPEG=1
+        BUILD_FLAGS := -Wall -O0 -flto -s USE_LIBJPEG=1
+    endif
+    ```
+
+1. Update the `all:` target to include `kahua`:
+
+    ```make
+    all: kahua mupdf-wasm.js mupdf-wasm.wasm mupdf-wasm-singlethread.js mupdf-wasm-singlethread.wasm samples
+    ```
+
+1. Add a `kahua` target (this allows the kahua target to be built with `make kahua` and can be extended with additional libs, etc.):
+
+    ```make
+    kahua: kahuapdf.bc
+    ```
+
+1. Add the `kahuapdf.bc` target:
+
+    ```make
+    kahuapdf.bc: $(MUPDF_CORE) lib/wrap.c
+        $(info --------------------------------------)
+        $(info LIB_BUILD_FLAGS: $(LIB_BUILD_FLAGS))
+        $(info BUILD_FLAGS: $(BUILD_FLAGS))
+        $(info --------------------------------------)
+
+        BASH_SOURCE=$(EMSDK_DIR)/emsdk_env.sh \
+        . $(EMSDK_DIR)/emsdk_env.sh; \
+        emcc -o kahuapdf.bc $(BUILD_FLAGS) \
+            -r \
+            --no-entry \
+            -D WASM_SKIP_TRY_CATCH=$(WASM_SKIP_TRY_CATCH) \
+            -s ABORTING_MALLOC=0 \
+            -s ALLOW_MEMORY_GROWTH=1 \
+            -s WASM=1 \
+            -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+            -s EXPORTED_FUNCTIONS='["_malloc","_free"]' \
+            -I ../../include \
+            --pre-js lib/wrap.js \
+            lib/wrap.c \
+            $(BUILD_DIR)/libmupdf.a \
+            $(BUILD_DIR)/libmupdf-third.a
+    ```

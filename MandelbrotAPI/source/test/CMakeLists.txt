@@ -8,4 +8,4 @@ target_include_directories(test PUBLIC
                            ${EXTRA_INCLUDES}
                            )
 
-target_link_libraries(test PUBLIC MandelbrotLib)
+#target_link_libraries(test PUBLIC MandelbrotLib)
