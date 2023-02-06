@@ -17,7 +17,7 @@ This document will walk through the steps to setup a basic compilation environme
     ```bash
     sudo apt install unzip build-essential cmake apt-file pkg-config
     sudo apt install mesa-common-dev libglu1-mesa-dev libxi-dev
-    sudo apt install libxrandr-dev
+    sudo apt install libxrandr-dev zlib1g-dev
     ```
 
 ## Installing Emscripten
