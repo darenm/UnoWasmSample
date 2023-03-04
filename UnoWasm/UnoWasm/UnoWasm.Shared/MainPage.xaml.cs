@@ -15,6 +15,9 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
+using Uno.Extensions;
+using UnoWasm.kahua.ktree.viewer.pdf;
+
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace UnoWasm
@@ -24,9 +27,40 @@ namespace UnoWasm
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private Random _random = new Random();
+        public PdfDocumentViewModel ViewModel { get; set; } = new PdfDocumentViewModel 
+        { 
+            Zoom = 1.0
+        };
         public MainPage()
         {
             this.InitializeComponent();
+            ViewModel.Pages = new System.Collections.ObjectModel.ObservableCollection<PdfPageViewModel>
+            {
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 1},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 2},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 3},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 4},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 5},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 6},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 7},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 8},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 9},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 10},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 11},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 12},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 13},
+                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 14},
+            };
+
+            this.Loaded += MainPage_Loaded;
         }
+
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // uno platform workaround for textbox paste support on webassembly
+
+        }
+
     }
 }

@@ -48,6 +48,10 @@ namespace UnoWasm
 
 #if NET6_0_OR_GREATER && WINDOWS && !HAS_UNO
             _window = new Window();
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            appWindow.Resize(new Windows.Graphics.SizeInt32 { Width = 2000, Height = 1600 });
             _window.Activate();
 #else
             _window = Microsoft.UI.Xaml.Window.Current;
@@ -174,7 +178,7 @@ namespace UnoWasm
                 // builder.AddFilter("Uno.Foundation.WebAssemblyRuntime", LogLevel.Debug );
             });
 
-            global::Uno.Extensions.LogExtensionPoint.AmbientLoggerFactory = factory;
+            Uno.Extensions.LogExtensionPoint.AmbientLoggerFactory = factory;
 
 #if HAS_UNO
             global::Uno.UI.Adapter.Microsoft.Extensions.Logging.LoggingAdapter.Initialize();
