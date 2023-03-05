@@ -20,8 +20,10 @@ namespace UnoWasm.kahua.ktree.viewer.pdf
                 OnPropertyChanged(nameof(Width));
             }
         }
-        private int currentPageNumber;
-        public int CurrentPageNumber { get => currentPageNumber; set => Set(ref currentPageNumber, value); }
+        private int _currentPageNumber;
+        public int CurrentPageNumber { get => _currentPageNumber; set => Set(ref _currentPageNumber, value); }
+        private int _displayPageNumber;
+        public int DisplayPageNumber { get => _displayPageNumber; set => Set(ref _displayPageNumber, value); }
         public double Height => Pages.Sum(p => p.Height) * Zoom;
         public double Width => Pages.Max(p => p.Width) * Zoom;
     }

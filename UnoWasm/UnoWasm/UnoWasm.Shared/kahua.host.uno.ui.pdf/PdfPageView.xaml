@@ -19,7 +19,7 @@
             VerticalAlignment="Center"
             FontSize="42"
             Foreground="White"
-            Text="{x:Bind FormattedPageID(ViewModel.PageNumber)}" />
+            Text="{x:Bind ViewModel.PageNumber, Mode=OneWay}" />
 
     </Grid>
 </UserControl>

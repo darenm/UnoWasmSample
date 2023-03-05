@@ -21,10 +21,13 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
         private const int INITIAL_PAGE_POOL_SIZE = 6; // initial size of the page pool
         private int _lastPoolId = 1;
         private CancellationTokenSource _renderTokenSource;
+        private bool _syncCurrentAndDisplayPage;
         private List<PdfPageView> _pageViewPool; // all of the page instances
         private List<PdfPageView> _pageViewsInUse; // those that are currently in view
         private Stack<PdfPageView> _pageViewsAvailable; // hidden pages available for use
 
+
+        #region PdfDocument
         public PdfDocumentViewModel PdfDocument
         {
             get { return (PdfDocumentViewModel)GetValue(PdfDocumentProperty); }
@@ -53,12 +56,17 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             }
         }
 
+        #endregion
+
         private void Document_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch(e.PropertyName)
             {
                 case nameof(PdfDocumentViewModel.Zoom):
                     UpdatePages();
+                    break;
+                case nameof(PdfDocumentViewModel.CurrentPageNumber):
+                    ScrollToPage();
                     break;
             }
         }
@@ -73,28 +81,7 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             this.Unloaded += _pdfPagesViewer_Unloaded;
         }
 
-        private void _viewPortScroller_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (_renderTokenSource != null)
-            {
-                _renderTokenSource.Cancel();
-                _renderTokenSource = null;
-            }
-            _renderTokenSource = new CancellationTokenSource();
-            RenderViewPort(_renderTokenSource);
-        }
-
-        private void _viewPortScroller_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (_renderTokenSource != null)
-            {
-                _renderTokenSource.Cancel();
-                _renderTokenSource = null;
-            }
-            _renderTokenSource = new CancellationTokenSource();
-            RenderViewPort(_renderTokenSource);
-        }
-
+        #region Lifecycle
         private void _pdfPagesViewer_Loaded(object sender, RoutedEventArgs e)
         {
             DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low,
@@ -113,6 +100,11 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
                     }
 
                     UpdatePages();
+
+                    if (PdfDocument.CurrentPageNumber != 1)
+                    {
+                        ScrollToPage();
+                    }
                 });
         }
 
@@ -127,6 +119,47 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             _pageViewsInUse.Clear();
             _pageViewsInUse = null;
         }
+        #endregion
+
+        #region ScrollViewer Events
+
+        private void _viewPortScroller_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_renderTokenSource != null)
+            {
+                _renderTokenSource.Cancel();
+                _renderTokenSource = null;
+            }
+            _renderTokenSource = new CancellationTokenSource();
+            // on initial load the previous size is 0
+            if (e.PreviousSize.Width != 0 && e.PreviousSize.Height != 0) 
+            {
+                _syncCurrentAndDisplayPage = true;
+            }
+            RenderViewPort(_renderTokenSource);
+        }
+
+        private void _viewPortScroller_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (_renderTokenSource != null)
+            {
+                _renderTokenSource.Cancel();
+                _renderTokenSource = null;
+            }
+            _renderTokenSource = new CancellationTokenSource();
+            RenderViewPort(_renderTokenSource);
+        }
+
+        #endregion
+
+        #region Rendering
+
+        private void ScrollToPage()
+        {
+            var vOffset = PdfDocument.Pages[PdfDocument.CurrentPageNumber - 1].PageRect.Top;
+            ViewPortScroller.ChangeView(null, vOffset, null, false);
+        }
+
 
         private void RenderViewPort(CancellationTokenSource renderTokenSource)
         {
@@ -134,6 +167,8 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             {
                 return;
             }
+
+            bool hasFoundFirstPage = false;
 
             // find all of the pages that should be visible in the viewport
             foreach (var page in PdfDocument.Pages)
@@ -145,6 +180,19 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
                 var viewPortRect = new Rect(ViewPortScroller.HorizontalOffset, ViewPortScroller.VerticalOffset, ViewPortScroller.ViewportWidth, ViewPortScroller.ViewportHeight);
                 viewPortRect.Intersect(page.PageRect);
                 var isInViewPort = viewPortRect.Height > 0 && viewPortRect.Width > 0;
+
+                if (isInViewPort && !hasFoundFirstPage)
+                {
+                    // this is the first page in the viewport
+                    hasFoundFirstPage = true;
+                    PdfDocument.DisplayPageNumber = page.PageNumber;
+                    if (_syncCurrentAndDisplayPage)
+                    {
+                        _syncCurrentAndDisplayPage = false;
+                        PdfDocument.CurrentPageNumber = page.PageNumber;
+                    }
+                }
+
                 if (!isInViewPort && page.IsInViewPort)
                 {
                     DeallocatePageView(page);
@@ -204,6 +252,10 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             }
         }
 
+        #endregion
+
+        #region PageView Management
+
         private void Pages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             // this is fired if pages are added/removed from the collection - won't usually happen
@@ -258,5 +310,6 @@ namespace UnoWasm.kahua.host.uno.ui.pdf
             pageView.ViewModel = pdfPageViewModel;
             pageView.Visibility = Visibility.Visible;
         }
+        #endregion
     }
 }

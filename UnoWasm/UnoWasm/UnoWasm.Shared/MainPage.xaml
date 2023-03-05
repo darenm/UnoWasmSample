@@ -11,16 +11,25 @@
 
     <Grid>
         <pdf:PdfPagesViewer PdfDocument="{x:Bind ViewModel, Mode=OneWay}" />
-        <Slider
-            Width="100"
-            Margin="24"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Header="Zoom Level"
-            Maximum="10"
-            Minimum="0.1"
-            StepFrequency="0.1"
-            TickPlacement="BottomRight"
-            Value="{x:Bind ViewModel.Zoom, Mode=TwoWay}" />
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Slider
+                Width="100"
+                Margin="24"
+                Header="Zoom Level"
+                Maximum="10"
+                Minimum="0.1"
+                StepFrequency="0.1"
+                TickPlacement="BottomRight"
+                Value="{x:Bind ViewModel.Zoom, Mode=TwoWay}" />
+            <StackPanel Orientation="Horizontal">
+                <Button Click="{x:Bind PrevPage}">
+                    <SymbolIcon Symbol="Upload" />
+                </Button>
+                <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.DisplayPageNumber, Mode=OneWay}" />
+                <Button Click="{x:Bind NextPage}">
+                    <SymbolIcon Symbol="Download" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Page>

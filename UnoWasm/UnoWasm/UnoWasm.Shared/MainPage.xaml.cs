@@ -53,6 +53,8 @@ namespace UnoWasm
                 new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 14},
             };
 
+            ViewModel.CurrentPageNumber = 5;
+
             this.Loaded += MainPage_Loaded;
         }
 
@@ -60,6 +62,16 @@ namespace UnoWasm
         {
             // uno platform workaround for textbox paste support on webassembly
 
+        }
+
+        private void NextPage()
+        {
+            ViewModel.CurrentPageNumber = Math.Min(ViewModel.Pages.Count, ViewModel.DisplayPageNumber + 1);
+        }
+
+        private void PrevPage()
+        {
+            ViewModel.CurrentPageNumber = Math.Max(1, ViewModel.DisplayPageNumber - 1);
         }
 
     }
