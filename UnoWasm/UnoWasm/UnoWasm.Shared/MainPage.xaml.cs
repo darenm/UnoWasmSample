@@ -1,21 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-using Uno.Extensions;
 using UnoWasm.kahua.ktree.viewer.pdf;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -35,23 +22,13 @@ namespace UnoWasm
         public MainPage()
         {
             this.InitializeComponent();
-            ViewModel.Pages = new System.Collections.ObjectModel.ObservableCollection<PdfPageViewModel>
+            var tempPages = new System.Collections.ObjectModel.ObservableCollection<PdfPageViewModel>(); ;
+
+            for (int i = 0; i < 1000; i++)
             {
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 1},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 2},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 3},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 4},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 5},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 6},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 7},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 8},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 9},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 10},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 11},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 12},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 13},
-                new PdfPageViewModel{ Height = _random.Next(600,1000), Width = _random.Next(300,1000), PageNumber = 14},
-            };
+                tempPages.Add(new PdfPageViewModel { Height = _random.Next(600, 1000), Width = _random.Next(300, 1000), PageNumber = i+1 });
+            }
+            ViewModel.Pages =tempPages;
 
             ViewModel.CurrentPageNumber = 5;
 
